@@ -47,7 +47,7 @@ type Job struct {
 
 func (w *Job) Do() {
 	println("服务了一个",w.a)
-
+//之后的逻辑处理代码全写这里, 然后传参数就从w里面的属性读取即可,比如这里面就是w.a
 }
 
 var abc= Job{}
@@ -64,7 +64,11 @@ type WorkerChan chan JobChan   //所有的worker组成worker 队列.
 
 var (
 	//JobQueue          chan Job
-	JobQueue=make(chan  Job, 200)         //为什么用上面的不好使???????????? 无缓冲的不好使why?
+	JobQueue=make(chan  Job)         //为什么用上面的不好使???????????? 无缓冲的不好使why?
+	//知道了, 原来是源代码里面忘了make这个变量而已.所以原始的 上面2个链接跑不通.
+	//---------但是还是推荐,后面加上一个数字,来做一个带缓冲的阻塞队列.	JobQueue=make(chan  Job,200)  比如这种.
+
+
 )
 
 
