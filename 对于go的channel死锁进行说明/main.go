@@ -5,129 +5,6 @@ import (
 	"time"
 )
 
-// go 并发https://blog.csdn.net/lein_wang/article/details/82746339
-//http://marcio.io/2015/07/handling-1-million-requests-per-minute-with-golang/
-/*
-
-所有的worker共享job queue
-
-
-
-
-
-
-
-
-
-
-
-*/
-
-
-
-
-
-
-
-
-// 先定义所有的类型!!!!!!!!!!!!!
-type Worker struct {
-	JobChannel JobChan  //工人维护一个job队列.
-	quit       chan bool
-}
-
-
-
-
-
-type Job struct {
-	a int
-}
-
-
-func (w *Job) Do() {
-	print(1111111111)
-
-}
-
-var abc= Job{}
-
-// A buffered channel that we can send work requests on.
-
-
-// define job channel
-type JobChan chan Job
-
-// define worker channer
-type WorkerChan chan JobChan   //所有的worker组成worker 队列.
-
-
-var (
-	JobQueue          JobChan
-	WorkerPool        WorkerChan
-)
-
-
-
-
-
-
-//再定义所有的方法.
-func (w *Worker) Start() {
-	go func() {
-		for {
-			// regist current job channel to worker pool
-			WorkerPool <- w.JobChannel
-			select {
-			case job := <-w.JobChannel:
-				job.Do()
-
-			// recieve quit event, stop worker
-			case <-w.quit:
-				return
-			}
-		}
-	}()
-}
-
-
-//Dispatcher 是主控制器.  workerPool 是全部的核心.
-type Dispatcher struct {
-	WorkerPool chan chan Job
-}
-
-
-func NewDispatcher(maxWorkers int) Dispatcher {  //go没法传默认参数,曹乐!
-	pool := make(chan chan Job, maxWorkers)
-	return Dispatcher{WorkerPool: pool}
-}
-
-
-func NewWorker(workerPool chan chan Job) Worker {
-	return Worker{
-
-		JobChannel: make(chan Job),
-		quit:       make(chan bool)}
-}
-func (d *Dispatcher) Run() {
-	for i := 0; i < 10; i++ {
-		worker := NewWorker(d.WorkerPool)
-
-		worker.Start()
-	}
-
-	for {
-		select {
-		case job := <-JobQueue:
-			go func(job Job) {
-				jobChan := <-WorkerPool
-				jobChan <- job
-			}(job)
-		// stop dispatcher
-
-		}
-	}
-}
 
 
 
@@ -168,7 +45,7 @@ func main(){
 
 
 */
-	c :=make(chan int)  //跟channel有关的一定要放到读写里面,不然他就会卡死
+	c :=make(chan int )  //跟channel有关的一定要放到读写里面 go,不然他就会卡死
 	go test(c)
 
 	go testDeadLock(c)

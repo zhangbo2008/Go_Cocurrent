@@ -1,0 +1,44 @@
+name: Publish
+
+on:
+  push:
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+  
+jobs:
+  klever-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Set up Go 1.14
+        uses: actions/setup-go@v1
+        with:
+           go-version: 1.14.7
+        id: go
+      - uses: actions/checkout@v2
+        with:
+         path: src/github.com/kleveross/klever-model-registry
+      - name: setup env
+        run: |
+          cd src/github.com/kleveross/klever-model-registry
+          pwd
+          go env
+          echo "GOPATH=$(go env GOPATH):$GITHUB_WORKSPACE" >> $GITHUB_ENV
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+      - uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Login to GitHub Container Registry
+        run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ secrets.GHCR_USERNAME }} --password-stdin
+      - name: docker-build-push
+        run: |
+          cd src/github.com/kleveross/klever-model-registry
+          make klever-docker-build-push
+      - name: docker-build-test
+        run: |
+          cd src/github.com/kleveross/klever-model-registry
+          make klever-extract-convert-test    

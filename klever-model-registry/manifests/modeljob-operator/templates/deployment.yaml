@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "klever-modeljob-operator.name" . }}
+  labels:
+    {{- include "klever-modeljob-operator.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "klever-modeljob-operator.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "klever-modeljob-operator.selectorLabels" . | nindent 8 }}
+    spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      serviceAccountName: {{ include "klever-modeljob-operator.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: SCHEDULER_NAME
+              value: {{ .Values.scheduler.name }}
+            - name: CAFFE_EXTRACT_IMAGE
+              value: "{{ .Values.docker.registry }}/{{ .Values.extraction.caffemodel }}"
+            - name: NETDEF_EXTRACT_IMAGE
+              value: "{{ .Values.docker.registry }}/{{ .Values.extraction.netdef }}"
+            - name: GRAPHDEF_EXTRACT_IMAGE
+              value: "{{ .Values.docker.registry }}/{{ .Values.extraction.graphdef }}"
+            - name: H5_EXTRACT_IMAGE
+              value: "{{ .Values.docker.registry }}/{{ .Values.extraction.h5 }}"
+            - name: MXNETPARAMS_EXTRACT_IMAGE
+              value: "{{ .Values.docker.registry }}/{{ .Values.extraction.mxnetparams }}"
+            - name: ONNX_EXTRACT_IMAGE
+              value: "{{ .Values.docker.registry }}/{{ .Values.extraction.onnx }}"
+            - name: SAVEDMODEL_EXTRACT_IMAGE
+              value: "{{ .Values.docker.registry }}/{{ .Values.extraction.savedmodel }}"
+            - name: TORCHSCRIPT_EXTRACT_IMAGE
+              value: "{{ .Values.docker.registry }}/{{ .Values.extraction.torchscript }}"
+            - name: PMML_EXTRACT_IMAGE
+              value: "{{ .Values.docker.registry }}/{{ .Values.extraction.pmml }}"
+            - name: CAFFE_CONVERSION_IMAGE
+              value: "{{ .Values.docker.registry }}/{{ .Values.conversion.caffemodel }}"
+            - name: MXNET_CONVERSION_IMAGE
+              value: "{{ .Values.docker.registry }}/{{ .Values.conversion.mxnet }}"
+            - name: H5_CONVERSION_IMAGE
+              value: "{{ .Values.docker.registry }}/{{ .Values.conversion.h5 }}"
+            - name: NETDEF_CONVERSION_IMAGE
+              value: "{{ .Values.docker.registry }}/{{ .Values.conversion.netdef }}"
+            - name: ORMB_INITIALIZER_IMAGE
+              value: "{{ .Values.docker.registry }}/{{ .Values.model.initializer }}"
+            - name: KLEVER_MODEL_REGISTRY_ADDRESS
+              value: {{ .Values.model.registry.address }}
+            - name: SERVER_ORMB_DOMAIN
+              value: {{ .Values.ormb.domain }}
+            - name: SERVER_ORMB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: ormb
+                  key: ORMB_USERNAME
+            - name: SERVER_ORMB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ormb
+                  key: ORMB_PASSWORD
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}

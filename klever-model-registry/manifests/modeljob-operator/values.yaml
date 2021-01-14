@@ -1,0 +1,109 @@
+# Default values for klever-modeljob-operator.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/kleveross/modeljob-operator
+  pullPolicy: Always
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: false
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name:
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+ingress:
+  enabled: false
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths: []
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources:
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Format: domain[:port]. Usually:
+# 1) if harbor "expose.type" is "ingress", the "domain" should be
+# the value of "expose.ingress.hosts.core" in harbor
+# 3) if harbor "expose.type" is "nodePort", the "domain" should be
+# the IP address of k8s node
+#
+# If Harbor is deployed behind the proxy, set it as the URL of proxy
+#
+# If "port" is not 80, you must set port, eg: 192.168.1.2:30002
+ormb:
+  domain: harbor-harbor-core.harbor-system
+
+#
+# docker.registry is the image address of `docker pull`
+#
+docker:
+  registry: ghcr.io/kleveross
+
+# model.registry.address is the internal address of klever-model-registry in k8s.
+model:
+  registry:
+    address: klever-model-registry.kleveross-system:8080
+  initializer: "klever-ormb-storage-initializer:v0.0.8"
+
+extraction:
+  caffemodel: 'caffemodel-extract:v0.3.0-alpha.1'
+  netdef: 'netdef-extract:v0.3.0-alpha.1'
+  graphdef: 'graphdef-extract:v0.3.0-alpha.1'
+  h5: 'h5-extract:v0.3.0-alpha.1'
+  mxnetparams: 'mxnetparams-extract:v0.3.0-alpha.1'
+  onnx: 'onnx-extract:v0.3.0-alpha.1'
+  savedmodel: 'savedmodel-extract:v0.3.0-alpha.1'
+  torchscript: 'torchscript-extract:v0.3.0-alpha.1'
+  pmml: 'pmml-extract:v0.3.0-alpha.1'
+
+conversion:
+  caffemodel: 'caffemodel_to_netdef:v0.3.0-alpha.1'
+  mxnetparams: 'mxnetparams_to_onnx:v0.3.0-alpha.1'
+  h5: 'h5_to_savedmodel:v0.3.0-alpha.1'
+  netdef: 'netdef_to_onnx:v0.3.0-alpha.1'
+    
+  
+scheduler:
+  name: ""

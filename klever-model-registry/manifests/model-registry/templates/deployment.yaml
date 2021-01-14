@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "klever-model-registry.name" . }}
+  labels:
+    {{- include "klever-model-registry.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "klever-model-registry.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "klever-model-registry.selectorLabels" . | nindent 8 }}
+    spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+          - name: SCHEDULER_NAME
+            value: {{ .Values.scheduler.name }}
+          - name: MODEL_INITIALIZER_CPU
+          - name: MODEL_INITIALIZER_MEM
+          - name: TRT_SERVING_IMAGE
+            value: "{{ .Values.model.serving.trt.image }}:{{ .Values.model.serving.trt.tag }}"
+          - name: PMML_SERVING_IMAGE
+            value: "{{ .Values.model.serving.pmml.image }}:{{ .Values.model.serving.pmml.tag }}"
+          - name: MLSERVER_IMAGE
+            value: "{{ .Values.model.serving.mlserver.image }}:{{ .Values.model.serving.mlserver.tag }}"
+          - name: MODEL_INITIALIZER_IMAGE
+            value: "{{ .Values.model.serving.initializer.image }}:{{ .Values.model.serving.initializer.tag }}"
+          - name: KLEVER_MODEL_REGISTRY_PORT
+            value: {{ .Values.service.Port }}
+          - name: EXTERNAL_ADDRESS
+            value: {{ .Values.externalAddress }}
+          - name: SERVER_ORMB_DOMAIN
+            value: {{ .Values.ormb.domain }}
+          - name: SERVER_ORMB_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: ormb
+                key: ORMB_USERNAME
+          - name: SERVER_ORMB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: ormb
+                key: ORMB_PASSWORD
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}

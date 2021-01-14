@@ -1,0 +1,18 @@
+# Output folder of build
+bin
+dist
+
+# Output file of unit test coverage
+coverage.out
+cover.out
+
+.vscode/
+
+config.json
+
+.DS_Store
+cache/
+
+
+# pycache
+__pycache__

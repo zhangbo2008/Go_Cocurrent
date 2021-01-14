@@ -1,0 +1,10 @@
+apiVersion: kleveross.io/v1alpha1
+kind: ModelJob
+metadata:
+  name: modeljob-h5-extract
+  namespace: default
+spec:
+  # Add fields here
+  model: "harbor-harbor-core.kleveross-system/release/h5:v1"
+  extraction:
+    format: "H5"
